@@ -1,0 +1,6 @@
+services:
+  inspection:
+    build: .
+    environment:
+      INSPECTION_BACKEND: local
+    volumes: ["./data:/app/data"]
