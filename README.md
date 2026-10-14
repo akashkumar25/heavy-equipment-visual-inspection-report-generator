@@ -38,6 +38,15 @@ docker compose up --build
 
 Copy `.env.example` to `.env` to change the backend or model. Put photos in `data/images/`.
 
+## Try the VLM backend
+
+```bash
+pip install -e ".[local]"          # transformers + torch (CPU) for the local backend
+inspection-report describe data/images/photo.jpg
+```
+
+With `INSPECTION_BACKEND=api` the same command sends the photo to the OpenAI-compatible endpoint in `INSPECTION_API_BASE_URL` (default: local Ollama) and needs no extra install. The local model is downloaded from Hugging Face on first use. The backend layer is unit-tested with a mocked HTTP transport; the real SmolVLM path is not run in CI.
+
 ## Development
 
 ```bash
@@ -48,7 +57,7 @@ pytest
 ## Roadmap
 
 - [x] Scaffold: package layout, settings, CLI, tests, CI, Docker
-- [ ] Small VLM on CPU with optional API backend
+- [x] Small VLM on CPU with optional API backend
 - [ ] Structured output schema with validation and retry on invalid output
 - [ ] Report rendering (Markdown/PDF) and Gradio UI
 - [ ] Small public-image evaluation set and accuracy table

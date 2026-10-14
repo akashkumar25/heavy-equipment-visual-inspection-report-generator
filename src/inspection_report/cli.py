@@ -2,8 +2,10 @@
 
 import argparse
 import sys
+from pathlib import Path
 
 from . import __version__
+from .backends import BackendError, get_backend
 from .config import Settings
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
@@ -22,6 +24,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--version", action="version", version=__version__)
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("status", help="show configuration and discovered images")
+    describe = sub.add_parser("describe", help="ask the configured VLM to describe one photo")
+    describe.add_argument("image", type=Path)
+    describe.add_argument(
+        "--prompt",
+        default="Describe the condition of the equipment components visible in this photo.",
+    )
     args = parser.parse_args(argv)
 
     if args.command == "status":
@@ -32,6 +40,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Images in {s.images_dir}: {len(images)}")
         for name in images:
             print(f"  - {name}")
+        return 0
+    if args.command == "describe":
+        try:
+            print(get_backend(Settings()).describe(args.image, args.prompt))
+        except (BackendError, OSError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
         return 0
     parser.print_help()
     return 0
