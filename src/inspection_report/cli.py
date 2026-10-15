@@ -7,6 +7,7 @@ from pathlib import Path
 from . import __version__
 from .backends import BackendError, get_backend
 from .config import Settings
+from .schema import InvalidOutputError, inspect_image
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -30,6 +31,9 @@ def main(argv: list[str] | None = None) -> int:
         "--prompt",
         default="Describe the condition of the equipment components visible in this photo.",
     )
+    inspect = sub.add_parser("inspect", help="produce a validated JSON inspection report for a photo")
+    inspect.add_argument("image", type=Path)
+    inspect.add_argument("--attempts", type=int, default=3)
     args = parser.parse_args(argv)
 
     if args.command == "status":
@@ -47,6 +51,14 @@ def main(argv: list[str] | None = None) -> int:
         except (BackendError, OSError) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
+        return 0
+    if args.command == "inspect":
+        try:
+            report = inspect_image(get_backend(Settings()), args.image, args.attempts)
+        except (BackendError, InvalidOutputError, OSError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(report.model_dump_json(indent=2))
         return 0
     parser.print_help()
     return 0
