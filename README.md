@@ -47,6 +47,14 @@ inspection-report describe data/images/photo.jpg
 
 With `INSPECTION_BACKEND=api` the same command sends the photo to the OpenAI-compatible endpoint in `INSPECTION_API_BASE_URL` (default: local Ollama) and needs no extra install. The local model is downloaded from Hugging Face on first use. The backend layer is unit-tested with a mocked HTTP transport; the real SmolVLM path is not run in CI.
 
+## Structured reports
+
+```bash
+inspection-report inspect data/images/photo.jpg > report.json
+```
+
+The model is asked for JSON matching `InspectionReport` (`schema.py`): a list of findings with `component`, `condition` (good, worn, damaged, leaking, cracked, missing, unknown), `severity` (none to critical), `recommended_action` and optional `notes`. Fenced or prose-wrapped JSON is tolerated; invalid or incomplete output is validated with pydantic and the error is sent back to the model for up to `--attempts` tries (default 3) before failing with a clear message. Tested with scripted fake backends.
+
 ## Development
 
 ```bash
@@ -58,7 +66,7 @@ pytest
 
 - [x] Scaffold: package layout, settings, CLI, tests, CI, Docker
 - [x] Small VLM on CPU with optional API backend
-- [ ] Structured output schema with validation and retry on invalid output
+- [x] Structured output schema with validation and retry on invalid output
 - [ ] Report rendering (Markdown/PDF) and Gradio UI
 - [ ] Small public-image evaluation set and accuracy table
 
