@@ -34,6 +34,10 @@ def main(argv: list[str] | None = None) -> int:
     inspect = sub.add_parser("inspect", help="produce a validated JSON inspection report for a photo")
     inspect.add_argument("image", type=Path)
     inspect.add_argument("--attempts", type=int, default=3)
+    report = sub.add_parser("report", help="inspect photos and write JSON, Markdown and PDF")
+    report.add_argument("images", type=Path, nargs="+")
+    report.add_argument("--out", type=Path, default=Path("reports"))
+    sub.add_parser("ui", help="launch the Gradio UI (needs the ui extra)")
     args = parser.parse_args(argv)
 
     if args.command == "status":
@@ -59,6 +63,25 @@ def main(argv: list[str] | None = None) -> int:
             print(f"error: {exc}", file=sys.stderr)
             return 1
         print(report.model_dump_json(indent=2))
+        return 0
+    if args.command == "report":
+        from .ui import build_reports
+
+        try:
+            backend = get_backend(Settings())
+        except (BackendError, OSError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        reports, errors, files = build_reports(backend, args.images, args.out)
+        for e in errors:
+            print(f"error: {e}", file=sys.stderr)
+        for kind, path in files.items():
+            print(f"{kind}: {path}")
+        return 0 if reports and not errors else 1
+    if args.command == "ui":
+        from .ui import launch
+
+        launch()
         return 0
     parser.print_help()
     return 0

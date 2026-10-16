@@ -55,6 +55,16 @@ inspection-report inspect data/images/photo.jpg > report.json
 
 The model is asked for JSON matching `InspectionReport` (`schema.py`): a list of findings with `component`, `condition` (good, worn, damaged, leaking, cracked, missing, unknown), `severity` (none to critical), `recommended_action` and optional `notes`. Fenced or prose-wrapped JSON is tolerated; invalid or incomplete output is validated with pydantic and the error is sent back to the model for up to `--attempts` tries (default 3) before failing with a clear message. Tested with scripted fake backends.
 
+## Reports and UI
+
+```bash
+pip install -e ".[pdf,ui]"
+inspection-report report data/images/a.jpg data/images/b.jpg --out reports/   # report.json, report.md, report.pdf
+inspection-report ui                                                       # Gradio app: upload photos, download reports
+```
+
+Several photos go into one combined Markdown/PDF document with a per-photo findings table and the highest severity on top. Photos that fail validation are listed as errors without stopping the others. Rendering and the UI logic are tested with scripted backends; the Gradio app was only checked to build, not driven in a browser.
+
 ## Development
 
 ```bash
@@ -67,7 +77,7 @@ pytest
 - [x] Scaffold: package layout, settings, CLI, tests, CI, Docker
 - [x] Small VLM on CPU with optional API backend
 - [x] Structured output schema with validation and retry on invalid output
-- [ ] Report rendering (Markdown/PDF) and Gradio UI
+- [x] Report rendering (Markdown/PDF) and Gradio UI
 - [ ] Small public-image evaluation set and accuracy table
 
 ## Demo
