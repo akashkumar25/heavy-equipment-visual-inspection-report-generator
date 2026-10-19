@@ -37,6 +37,9 @@ def main(argv: list[str] | None = None) -> int:
     report = sub.add_parser("report", help="inspect photos and write JSON, Markdown and PDF")
     report.add_argument("images", type=Path, nargs="+")
     report.add_argument("--out", type=Path, default=Path("reports"))
+    ev = sub.add_parser("eval", help="score the backend on a labelled image set")
+    ev.add_argument("manifest", type=Path)
+    ev.add_argument("--attempts", type=int, default=3)
     sub.add_parser("ui", help="launch the Gradio UI (needs the ui extra)")
     args = parser.parse_args(argv)
 
@@ -78,6 +81,18 @@ def main(argv: list[str] | None = None) -> int:
         for kind, path in files.items():
             print(f"{kind}: {path}")
         return 0 if reports and not errors else 1
+    if args.command == "eval":
+        from .evaluate import evaluate
+
+        settings = Settings()
+        try:
+            result = evaluate(get_backend(settings), args.manifest, args.attempts)
+        except (BackendError, OSError, ValueError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        label = settings.local_model if settings.backend == "local" else settings.api_model
+        print(result.to_markdown(label))
+        return 0
     if args.command == "ui":
         from .ui import launch
 
