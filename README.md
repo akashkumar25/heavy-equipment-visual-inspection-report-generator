@@ -65,6 +65,16 @@ inspection-report ui                                                       # Gra
 
 Several photos go into one combined Markdown/PDF document with a per-photo findings table and the highest severity on top. Photos that fail validation are listed as errors without stopping the others. Rendering and the UI logic are tested with scripted backends; the Gradio app was only checked to build, not driven in a browser.
 
+## Evaluation
+
+```bash
+inspection-report eval data/eval/manifest.json
+```
+
+Scores the configured backend on a labelled image set (see `data/eval/README.md` for the manifest format; only publicly licensed images with `source` and `license`). It prints a Markdown table: schema-valid output rate, component recall, condition accuracy, and severity exact / within one level over matched components. The scorer is unit-tested with scripted backends.
+
+**Results: not yet available.** The public image set has not been assembled and the model has not been run on it, so this README deliberately shows no accuracy numbers yet.
+
 ## Development
 
 ```bash
@@ -78,6 +88,8 @@ pytest
 - [x] Small VLM on CPU with optional API backend
 - [x] Structured output schema with validation and retry on invalid output
 - [x] Report rendering (Markdown/PDF) and Gradio UI
+- [x] Evaluation harness (manifest format, scoring, `eval` command)
+- [ ] Public-image evaluation set and accuracy table
 - [ ] Small public-image evaluation set and accuracy table
 
 ## Demo
