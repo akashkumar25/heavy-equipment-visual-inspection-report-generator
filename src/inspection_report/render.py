@@ -6,7 +6,7 @@ Several photos are combined into one document by passing a list of reports.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .schema import InspectionReport
@@ -19,7 +19,7 @@ def _cell(text: str) -> str:
 
 
 def to_markdown(reports: list[InspectionReport], title: str = "Equipment inspection report") -> str:
-    lines = [f"# {title}", "", f"Date: {date.today().isoformat()}", ""]
+    lines = [f"# {title}", "", f"Date: {datetime.now(tz=timezone.utc).date().isoformat()}", ""]
     if reports:
         worst = max((r.worst_severity for r in reports), key=lambda s: list(type(s)).index(s))
         lines += [f"Photos: {len(reports)} | Highest severity: **{SEVERITY_LABEL[worst.value]}**", ""]
@@ -58,7 +58,7 @@ def to_pdf(
     pdf.set_font("Helvetica", "B", 16)
     pdf.cell(0, 10, _latin1(title), new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 6, f"Date: {date.today().isoformat()}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 6, f"Date: {datetime.now(tz=timezone.utc).date().isoformat()}", new_x="LMARGIN", new_y="NEXT")
     for r in reports:
         pdf.ln(4)
         pdf.set_font("Helvetica", "B", 12)
